@@ -133,7 +133,8 @@ async function rpc(fn, args) {
   const s = syncCfg();
   const r = await fetch(s.url.replace(/\/+$/, '') + '/rest/v1/rpc/' + fn, {
     method: 'POST',
-    headers: { apikey: s.anon, Authorization: 'Bearer ' + s.anon, 'Content-Type': 'application/json' },
+    // ancienne clé « anon » = JWT (eyJ…) : on l'envoie aussi en Bearer ; la nouvelle clé « sb_publishable_… » ne va que dans apikey
+    headers: { apikey: s.anon, ...(s.anon.startsWith('eyJ') ? { Authorization: 'Bearer ' + s.anon } : {}), 'Content-Type': 'application/json' },
     body: JSON.stringify(args),
   });
   if (!r.ok) throw new Error('HTTP ' + r.status);
