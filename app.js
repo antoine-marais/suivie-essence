@@ -60,6 +60,7 @@ const I18N = {
     syncStep1: '1. Crée un projet gratuit sur supabase.com.', syncStep2: '2. Dans « SQL Editor », colle ce SQL et clique sur Run.',
     syncStep3: '3. Dans Project Settings, API : copie « Project URL » et la clé « anon public », puis colle-les ci-dessous.',
     syncStep4: '4. Génère une clé de synchro, puis copie le lien de configuration et ouvre-le sur l’autre appareil.',
+    pasteLink: 'Déjà configuré sur un autre appareil ? Colle ici le lien de config',
     copySql: 'Copier le SQL', copied: 'Copié ✓', sUrl: 'Project URL', sAnon: 'Clé anon public', sKey: 'Clé de synchro (secrète)', genKey: 'Générer une clé', copyLink: 'Copier le lien de config', syncNow: 'Synchroniser maintenant',
     stOff: 'Non configurée', stSyncing: 'Synchronisation…', stOk: 'Synchronisé', stError: 'Erreur', last: 'dernière',
     applySync: 'Configurer la synchronisation avec ce lien ?', linkWarn: 'Ce lien contient ta clé secrète : ne le partage pas.',
@@ -99,6 +100,7 @@ const I18N = {
     syncStep1: '1. Create a free project on supabase.com.', syncStep2: '2. In “SQL Editor”, paste this SQL and click Run.',
     syncStep3: '3. In Project Settings, API: copy “Project URL” and the “anon public” key and paste them below.',
     syncStep4: '4. Generate a sync key, then copy the setup link and open it on your other device.',
+    pasteLink: 'Already set up on another device? Paste the setup link here',
     copySql: 'Copy SQL', copied: 'Copied ✓', sUrl: 'Project URL', sAnon: 'Anon public key', sKey: 'Sync key (secret)', genKey: 'Generate a key', copyLink: 'Copy setup link', syncNow: 'Sync now',
     stOff: 'Not configured', stSyncing: 'Syncing…', stOk: 'Synced', stError: 'Error', last: 'last',
     applySync: 'Configure sync with this link?', linkWarn: 'This link contains your secret key: do not share it.',
@@ -417,6 +419,7 @@ function vSet() {
     <div class="mut">${t('syncIntro')}</div>
     <div class="mut" style="margin-top:8px">${t('syncStep1')}<br>${t('syncStep2')}<br>${t('syncStep3')}<br>${t('syncStep4')}</div>
     <button class="sec" data-act="copySql" style="margin-top:10px">${t('copySql')}</button>
+    <label>${t('pasteLink')}</label><input id="sLink" placeholder="https://…#sync=…" autocapitalize="off" spellcheck="false">
     <label>${t('sUrl')}</label><input id="sUrl" value="${esc(sy.url)}" placeholder="https://xxxx.supabase.co" autocapitalize="off" spellcheck="false">
     <label>${t('sAnon')}</label><input id="sAnon" value="${esc(sy.anon)}" autocapitalize="off" spellcheck="false">
     <label>${t('sKey')}</label><input id="sKey" value="${esc(sy.key)}" autocapitalize="off" spellcheck="false">
@@ -532,6 +535,14 @@ document.addEventListener('change', ev => {
   if (el.id === 'vehSel') { data.settings.activeVehicle = el.value; S.persist(); return render(); }
   if (el.id === 'pFuel') { prices.fuel = el.value; return; }
   if (el.id === 'pRad') { prices.radius = +el.value; return; }
+  if (el.id === 'sLink') {
+    try {
+      const m = el.value.match(/#sync=([^\s]+)/); const c = JSON.parse(atob(m[1]));
+      if (!c.u || !c.a || !c.k) throw 0;
+      S.sync.set({ url: String(c.u), anon: String(c.a), key: String(c.k) }); render(); toast(t('saved'));
+    } catch (e) { toast(t('importErr')); }
+    return;
+  }
   const v = vehicle();
   if (el.id === 'sVehicle') { v.name = el.value.trim() || v.name; S.upsert('vehicle', v); renderHeader(); toast(t('saved')); }
   else if (el.id === 'sBudget') { v.budget = parse(el.value) || 0; S.upsert('vehicle', v); toast(t('saved')); }
