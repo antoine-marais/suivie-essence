@@ -137,7 +137,11 @@ async function rpc(fn, args) {
     headers: { apikey: s.anon, ...(s.anon.startsWith('eyJ') ? { Authorization: 'Bearer ' + s.anon } : {}), 'Content-Type': 'application/json' },
     body: JSON.stringify(args),
   });
-  if (!r.ok) throw new Error('HTTP ' + r.status);
+  if (!r.ok) {
+    let d = '';
+    try { const j = await r.json(); d = [j.code, j.message, j.hint].filter(Boolean).join(' — '); } catch (e) {}
+    throw new Error(('HTTP ' + r.status + ' ' + d).trim().slice(0, 240));
+  }
   const txt = await r.text();
   return txt ? JSON.parse(txt) : null;
 }
