@@ -537,7 +537,8 @@ document.addEventListener('change', ev => {
   else if (el.id === 'sBudget') { v.budget = parse(el.value) || 0; S.upsert('vehicle', v); toast(t('saved')); }
   else if (el.id === 'sCur') { data.settings.currency = el.value.trim() || '€'; S.persist(); toast(t('saved')); }
   else if (el.id === 'sUrl' || el.id === 'sAnon' || el.id === 'sKey') {
-    S.sync.set({ url: $('#sUrl').value.trim(), anon: $('#sAnon').value.trim(), key: $('#sKey').value.trim() });
+    S.sync.set({ url: $('#sUrl').value, anon: $('#sAnon').value, key: $('#sKey').value.trim() });
+    $('#sUrl').value = data.settings.sync.url; $('#sAnon').value = data.settings.sync.anon;
   }
 });
 

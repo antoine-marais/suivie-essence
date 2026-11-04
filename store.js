@@ -131,7 +131,7 @@ const syncConfigured = () => { const s = syncCfg(); return !!(s.url && s.anon &&
 function setSync(st, err = '') { syncStatus = st; syncErr = err; emit('status'); }
 async function rpc(fn, args) {
   const s = syncCfg();
-  const r = await fetch(s.url.replace(/\/+$/, '') + '/rest/v1/rpc/' + fn, {
+  const r = await fetch(cleanUrl(s.url) + '/rest/v1/rpc/' + fn, {
     method: 'POST',
     // ancienne clé « anon » = JWT (eyJ…) : on l'envoie aussi en Bearer ; la nouvelle clé « sb_publishable_… » ne va que dans apikey
     headers: { apikey: s.anon, ...(s.anon.startsWith('eyJ') ? { Authorization: 'Bearer ' + s.anon } : {}), 'Content-Type': 'application/json' },
@@ -164,7 +164,12 @@ async function syncNow() {
 }
 function scheduleSync() { if (!syncConfigured()) return; clearTimeout(syncTimer); syncTimer = setTimeout(syncNow, 1200); }
 const genKey = () => { const b = new Uint8Array(24); crypto.getRandomValues(b); return [...b].map(x => x.toString(16).padStart(2, '0')).join(''); };
-function setSyncConfig(c) { Object.assign(syncCfg(), c); persist(); if (syncConfigured()) syncNow(); else setSync('off'); }
+// ne garde que https://xxxx.supabase.co (retire /rest/v1, les « / » finaux, espaces…)
+function cleanUrl(u) {
+  u = String(u || '').trim(); if (!u) return '';
+  try { return new URL(/^https?:\/\//i.test(u) ? u : 'https://' + u).origin; } catch (e) { return u; }
+}
+function setSyncConfig(c) { if ('url' in c) c.url = cleanUrl(c.url); if ('anon' in c) c.anon = String(c.anon || '').trim(); Object.assign(syncCfg(), c); persist(); if (syncConfigured()) syncNow(); else setSync('off'); }
 window.addEventListener('online', () => syncNow());
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') syncNow(); });
 
