@@ -13,12 +13,13 @@
 </head>
 <body>
 <header>
-  <h1 id="appTitle">Fuel Log</h1>
-  <button id="langBtn" class="ghost" aria-label="Language">EN</button>
+  <div id="vehSlot"></div>
+  <div class="hr"><button id="syncBtn" class="ghost" hidden aria-label="Sync">☁️</button><button id="langBtn" class="ghost" aria-label="Language">EN</button></div>
 </header>
 <main id="view"></main>
 <nav id="tabs"></nav>
 <div id="toast" role="status"></div>
+<script src="store.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
